@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Eye Watch Feed</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      margin: 2rem;
+    }
+    h1 {
+      color: #333;
+    }
+    ul {
+      padding-left: 1.5rem;
+    }
+    li {
+      margin-bottom: 0.5rem;
+    }
+  </style>
+</head>
+<body>
+  <h1>Data from Column A</h1>
+  <ul id="column-data"></ul>
+  <p id="error-message" style="color: red;"></p>
+
+  <script>
+    const sheetId = '1QNpQuX8FZm1KcdCYyLj6WIhOuoxXt57KQqV7fKMLSH4';
+    const apiKey = 'AIzaSyAnjraIjs-jdsZA6pK1Ab5GjgWIifhykM4';
+    const range = 'Sheet1!A:A'; // Change "Sheet1" to your actual sheet name if needed
+
+    const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${range}?key=${apiKey}`;
+
+    fetch(url)
+      .then(response => {
+        if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+        return response.json();
+      })
+      .then(data => {
+        const list = document.getElementById('column-data');
+        const rows = data.values || [];
+        rows.forEach(row => {
+          const li = document.createElement('li');
+          li.textContent = row[0];
+          list.appendChild(li);
+        });
+        if (rows.length === 0) {
+          document.getElementById('error-message').textContent = 'No data found in Column A.';
+        }
+      })
+      .catch(error => {
+        console.error(error);
+        document.getElementById('error-message').textContent = 'Unable to load data. Check sheet name, access, or console for more details.';
+      });
+  </script>
+</body>
+</html>
