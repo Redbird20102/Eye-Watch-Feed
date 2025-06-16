@@ -5,31 +5,37 @@
   <title>Eye Watch Feed</title>
   <style>
     body {
-      font-family: sans-serif;
-      margin: 2rem;
+      font-family: monospace, monospace;
+      margin: 1rem;
+      white-space: pre-wrap; /* preserve whitespace and wrap */
     }
-    h1 {
-      color: #333;
-    }
-    ul {
-      padding-left: 1.5rem;
-    }
-    li {
-      margin-bottom: 0.5rem;
+    #error-message {
+      color: red;
     }
   </style>
 </head>
 <body>
-  <h1>Data from Column A</h1>
-  <ul id="column-data"></ul>
-  <p id="error-message" style="color: red;"></p>
+  <pre id="column-data"></pre>
+  <p id="error-message"></p>
 
   <script>
     const sheetId = '1QNpQuX8FZm1KcdCYyLj6WIhOuoxXt57KQqV7fKMLSH4';
     const apiKey = 'AIzaSyAnjraIjs-jdsZA6pK1Ab5GjgWIifhykM4';
-    const range = 'Sheet1!A:A'; // Change "Sheet1" to your actual sheet name if needed
+    const range = 'Sheet1!A:A'; // Adjust if needed
 
     const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${range}?key=${apiKey}`;
+
+    const errorMessage = document.getElementById('error-message');
+    const pre = document.getElementById('column-data');
+
+    // Escape HTML special characters so XML shows as text
+    function escapeHtml(text) {
+      return text.replace(/&/g, "&amp;")
+                 .replace(/</g, "&lt;")
+                 .replace(/>/g, "&gt;");
+    }
+
+    pre.textContent = 'Loading data...';
 
     fetch(url)
       .then(response => {
@@ -37,20 +43,21 @@
         return response.json();
       })
       .then(data => {
-        const list = document.getElementById('column-data');
         const rows = data.values || [];
-        rows.forEach(row => {
-          const li = document.createElement('li');
-          li.textContent = row[0];
-          list.appendChild(li);
-        });
         if (rows.length === 0) {
-          document.getElementById('error-message').textContent = 'No data found in Column A.';
+          errorMessage.textContent = 'No data found in Column A.';
+          pre.textContent = '';
+          return;
         }
+        // Join all rows into one string, escape HTML, and display inside <pre>
+        const combinedText = rows.map(row => row[0]).join('\n\n');
+        pre.innerHTML = escapeHtml(combinedText);
+        errorMessage.textContent = '';
       })
       .catch(error => {
         console.error(error);
-        document.getElementById('error-message').textContent = 'Unable to load data. Check sheet name, access, or console for more details.';
+        pre.textContent = '';
+        errorMessage.textContent = 'Unable to load data. Check sheet name, access, or console for more details.';
       });
   </script>
 </body>
